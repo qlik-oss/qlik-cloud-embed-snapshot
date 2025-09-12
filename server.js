@@ -287,7 +287,7 @@ async function saveSnapshots(tasks) {
         `   ❌ Task ${task.name} (${task.id}) incomplete - cleaning up`
       );
       try {
-        await fs.rmdir(dir, { recursive: true });
+        await fs.rm(dir, { recursive: true });
         console.log(
           `   Cleaned up incomplete snapshot directory for task ${task.id}`
         );

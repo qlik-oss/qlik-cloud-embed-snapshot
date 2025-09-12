@@ -46,7 +46,7 @@ Alternatively, you can download and extract the project files.
 
 ## Step 2. Set up chart monitoring tasks in Qlik Cloud
 
-Before running this application, you need to add at least one0 monitored chart to a space that the OAuth client bot user can access:
+Before running this application, you need to add at least one monitored chart to a space that the OAuth client bot user can access:
 
 1. [Monitor a chart from a Qlik Sense app](https://help.qlik.com/en-US/cloud-services/Subsystems/Hub/Content/Sense_Hub/Hub/monitor-charts-hub.htm), and place into a space.
 2. Add the OAuth client's bot user to the relevant space with `Can view` or greater permissions.
