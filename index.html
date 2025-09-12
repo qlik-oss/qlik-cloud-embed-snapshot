@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qlik Cloud Analytics snapshots</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Include qlik-embed web component bundle for unauthenticated snapshots -->
+    <script
+      crossorigin="anonymous"
+      src="https://cdn.jsdelivr.net/npm/@qlik/embed-web-components@1/dist/index.min.js"
+      data-auth-type="noauth"
+    ></script>
+
+    <!-- Import snapshot middleware helper -->
+    <script type="module">
+      import { getSnapshots, getLocalSnapshots } from "./snapshots.js";
+
+      let isLoading = false;
+
+      // Function to show/hide loading spinner
+      function setLoading(loading) {
+        isLoading = loading;
+        const refreshBtn = document.getElementById("refresh-btn");
+        const spinner = document.getElementById("loading-spinner");
+        const btnText = document.getElementById("btn-text");
+        
+        if (loading) {
+          refreshBtn.disabled = true;
+          refreshBtn.classList.add("opacity-50", "cursor-not-allowed");
+          spinner.classList.remove("hidden");
+          btnText.textContent = "Refreshing...";
+        } else {
+          refreshBtn.disabled = false;
+          refreshBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          spinner.classList.add("hidden");
+          btnText.textContent = "Refresh snapshots from Qlik Cloud";
+        }
+      }
+
+      // Function to check if an image exists
+      async function imageExists(url) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = url;
+        });
+      }
+
+      // Function to load and display snapshots
+      async function loadSnapshots(source = 'backend') {
+        try {
+          setLoading(true);
+          
+          // Choose data source based on parameter
+          const snapshots = source === 'local' 
+            ? await getLocalSnapshots() 
+            : await getSnapshots();
+            
+          const snapshotList = document.getElementById("snapshot-list");
+          const noSnapshotsMsg = document.getElementById("no-snapshots");
+
+          // Clear existing content
+          snapshotList.innerHTML = "";
+
+          // Filter snapshots to only include those with both images and snapshots available
+          const availableSnapshots = [];
+          for (const item of snapshots) {
+            // Use the new metadata fields to determine availability
+            const hasContent = item.imageAvailable && item.snapshotAvailable;
+            if (hasContent) {
+              availableSnapshots.push(item);
+            } else {
+              console.log(`Skipping snapshot ${item.name} (${item.id}) - missing required content (images: ${item.imageAvailable}, snapshot: ${item.snapshotAvailable})`);
+            }
+          }
+
+          if (availableSnapshots.length === 0) {
+            noSnapshotsMsg.classList.remove("hidden");
+            snapshotList.classList.add("hidden");
+          } else {
+            noSnapshotsMsg.classList.add("hidden");
+            snapshotList.classList.remove("hidden");
+
+            for (const item of availableSnapshots) {
+              const li = document.createElement("li");
+              li.className = "bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer border border-gray-200";
+
+              // Create snapshot item content
+              li.innerHTML = `
+                <div class="flex items-center space-x-4">
+                  <img 
+                    src="/public/snapshots/${item.id}/image-small.png" 
+                    alt="Snapshot ${item.name}" 
+                    class="w-16 h-16 object-cover rounded-md bg-gray-100"
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0NFY0NEgyMFYyMFoiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxjaXJjbGUgY3g9IjI4IiBjeT0iMjgiIHI9IjMiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTIwIDM2TDI4IDI4TDM2IDM2TDQ0IDI4IiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPg=='"
+                    style="display: ${item.imageAvailable ? 'block' : 'none'}"
+                  />
+                  <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center" style="display: ${item.imageAvailable ? 'none' : 'flex'}">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">${item.name}</h3>
+                    <p class="text-sm text-gray-500">Viz: ${item.visualization}</p>
+                    <p class="text-xs text-gray-400">Mode: ${item.displayMode}</p>
+                    <p class="text-xs text-gray-400">ID: ${item.id}</p>
+                  </div>
+                  <div class="text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+              `;
+
+              // Add click handler to render snapshot
+              li.addEventListener("click", async () => {
+                const container = document.getElementById("snapshot-container");
+                const placeholderMsg = document.getElementById("placeholder-msg");
+                const header = document.getElementById("snapshot-viewer-header");
+                
+                container.innerHTML = "";
+                placeholderMsg.classList.add("hidden");
+                
+                // Update header to include snapshot name
+                header.textContent = `Snapshot Viewer: ${item.name}`;
+
+                try {
+                  // Use the displayMode from metadata to determine how to render
+                  if (item.displayMode === 'snapshot' && item.snapshotAvailable) {
+                    // Render the interactive chart for supported types
+                    const resp = await fetch(`/public/snapshots/${item.id}/snapshot.json`);
+                    const json = await resp.json();
+                    
+                    const embed = document.createElement("qlik-embed");
+                    embed.setAttribute("ui", "analytics/snapshot");
+                    embed.className = "w-full h-full bg-white rounded-lg shadow-md";
+                    embed.setAttribute("data___json", JSON.stringify(json));
+                    container.appendChild(embed);
+                  } else {
+                    // Show large image for unsupported types or when snapshot is not available
+                    const imageUrl = `/public/snapshots/${item.id}/image-large.png`;
+                    
+                    if (item.imageAvailable) {
+                      container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full">
+                          <img 
+                            src="${imageUrl}" 
+                            alt="Snapshot ${item.name}" 
+                            class="max-w-full max-h-full object-contain rounded-lg shadow-md"
+                          />
+                        </div>
+                      `;
+                    } else {
+                      container.innerHTML = `
+                        <div class="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
+                          <p class="font-semibold">Content not available</p>
+                          <p class="text-sm">Visualization type "${item.visualization}" is not supported and no image is available.</p>
+                        </div>
+                      `;
+                    }
+                  }
+                } catch (error) {
+                  // Reset header on error
+                  header.textContent = "Snapshot Viewer";
+                  container.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                      <p class="font-semibold">Error loading snapshot</p>
+                      <p class="text-sm">${error.message}</p>
+                    </div>
+                  `;
+                }
+              });
+
+              snapshotList.appendChild(li);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading snapshots:", error);
+          const snapshotList = document.getElementById("snapshot-list");
+          snapshotList.innerHTML = `
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <p class="font-semibold">Error loading snapshots</p>
+              <p class="text-sm">${error.message}</p>
+            </div>
+          `;
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      // Function to refresh snapshots from the backend
+      async function refreshSnapshots() {
+        return loadSnapshots('backend');
+      }
+
+      // Function to load local snapshots without backend call
+      async function loadLocalSnapshots() {
+        return loadSnapshots('local');
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Add refresh button click handler (fetches from backend)
+        document.getElementById("refresh-btn").addEventListener("click", refreshSnapshots);
+        
+        // Load local snapshots on page load (no backend call)
+        await loadLocalSnapshots();
+      });
+    </script>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Qlik Cloud Analytics Snapshots</h1>
+          <p class="text-gray-600">View and interact with your analytical snapshots</p>
+        </div>
+        
+        <!-- Main Refresh Button -->
+        <button 
+          id="refresh-btn"
+          class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-md"
+        >
+          <!-- Loading Spinner -->
+          <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span id="btn-text">Refresh snapshots from Qlik Cloud</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Snapshots List -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-xl font-semibold text-gray-900">Available Snapshots</h2>
+            </div>
+            
+            <!-- No snapshots message -->
+            <div id="no-snapshots" class="hidden p-6 text-center">
+              <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 1v1a1 1 0 001 1h8a1 1 0 001-1V5m-9 0h10M9 9v6m6-6v6"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No snapshots available</h3>
+              <p class="text-gray-500 mb-4">There are no snapshots to display. Click the refresh button to fetch the latest snapshots.</p>
+            </div>
+            
+            <!-- Snapshots list -->
+            <ul id="snapshot-list" class="divide-y divide-gray-200 p-4 space-y-3"></ul>
+          </div>
+        </div>
+
+        <!-- Snapshot Viewer -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 min-h-96">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 id="snapshot-viewer-header" class="text-xl font-semibold text-gray-900">Snapshot Viewer</h2>
+            </div>
+            
+            <!-- Placeholder message -->
+            <div id="placeholder-msg" class="p-8 text-center">
+              <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Select a snapshot to view</h3>
+              <p class="text-gray-500">Choose a snapshot from the list on the left to display it here.</p>
+            </div>
+            
+            <!-- Snapshot container -->
+            <div id="snapshot-container" class="p-6 h-96"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
