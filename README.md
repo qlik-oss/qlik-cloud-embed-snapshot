@@ -1,30 +1,33 @@
 # Embed Qlik Cloud Analytics snapshots using qlik-embed
 
 > **Important**  
-> This project is not production ready. It is structured for learning and evaluation of the qlik-embed project with snapshot data served to unauthenticated users. For a production app, you should first review the [guiding principles for OAuth M2M authentication](https://qlik.dev/authenticate/oauth/oauth-m2m/) and understand how to use [qlik-embed](https://qlik.dev/embed/qlik-embed/) and [qlik/api](https://qlik.dev/toolkits/qlik-api/). You should also use HTTPS rather than HTTP for your project.
-
-> **Note**  
-> Consider first reviewing the associated [embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-charts-tutorial/) before you begin.
+> This solution documented in this repository is not production ready. The intent is to teach you how to use qlik-embed.
 
 ## Introduction
 
-The goal of this project is to show how to easily serve Qlik Cloud Analytics snapshots to unauthenticated users, enabling you to share chart visualizations without requiring users to log in. This project leverages Qlik's qlik-embed web components, qlik/api, and OAuth machine-to-machine authentication capabilities.
+Imagine a situation where you need to show basic reporting and KPI information on a summary page of your web application. The solution doesn't require interactivity, but solving the problem with SQL and D3.js means writing a lot of code that can be difficult and time consuming to test and change. What if there is a way to easily serve Qlik Cloud Analytics snapshots of visualizations and data, enabling you to render summary resources without requiring users to log in? In this structured tutorial, you're going to learn how to render snapshot data to unauthenticated users using Qlik's qlik-embed web components, qlik/api, and OAuth machine-to-machine authentication capabilities.
 
 ![Screenshot of resulting embedded snapshots](docs/screenshot.png)
 
-It showcases several key techniques:
+## What you will learn
 
-• **qlik-embed `analytics/snapshot`**: Load static chart snapshots without authentication
-• **Automated snapshot retrieval**: Fetch the latest snapshots from Qlik Cloud using chart monitoring tasks
-• **Local snapshot serving**: Serve previously downloaded snapshots for fast, offline access
-• **Multiple display modes**: Support both image and interactive snapshot formats based on chart type
+- **qlik-embed `analytics/snapshot`**: Load static chart snapshots without authentication
+- **Automated snapshot retrieval**: Fetch the latest snapshots from Qlik Cloud using chart monitoring tasks
+- **Local snapshot serving**: Serve previously downloaded snapshots for fast, offline access
+- **Multiple display modes**: Support both image and interactive snapshot formats based on chart type
 
 ## Prerequisites
 
-• [Node.js](https://nodejs.org/) version 22 or higher
-• An [OAuth M2M client](https://qlik.dev/authenticate/oauth/create/create-oauth-client/) configured with:
-  • Scopes: `user_default`
-  • No specific allowed origins required (server-side authentication)
+Before you begin, review the following articles to accelerate your path to success with absolute confidence.
+
+- Using [qlik-embed](https://qlik.dev/embed/qlik-embed/)
+- [Guiding principles for OAuth M2M authentication](https://qlik.dev/authenticate/oauth/oauth-m2m/).
+- [Embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-charts-tutorial/).
+- Use HTTPS rather than HTTP for your project.
+- [Node.js](https://nodejs.org/) version 22 or higher
+- An [OAuth M2M client](https://qlik.dev/authenticate/oauth/create/create-oauth-client/) configured with:
+  - Scopes: `user_default`
+  - No specific allowed origins required (server-side authentication)
 
 ## Step 1. Set up your local project
 
