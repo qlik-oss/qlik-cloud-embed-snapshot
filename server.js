@@ -212,8 +212,7 @@ async function saveSnapshots(tasks) {
           fileAlias,
           { status: "successful" }
         );
-
-        if (fileResponse.status >= 200 && fileResponse.status < 300) {
+        if (fileResponse.status = 200) {
           const contentType = (
             fileResponse.headers.get("content-type") || ""
           ).toLowerCase();
