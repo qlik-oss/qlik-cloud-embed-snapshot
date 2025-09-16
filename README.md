@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Imagine a situation where you need to show basic reporting and KPI information on a summary page of your web application. The solution doesn't require interactivity, but solving the problem with SQL and D3.js means writing a lot of code that can be difficult and time consuming to test and change. What if there is a way to easily serve Qlik Cloud Analytics snapshots of visualizations and data, enabling you to render summary resources without requiring users to log in? In this structured tutorial, you're going to learn how to render snapshot data to unauthenticated users using Qlik's qlik-embed web components, qlik/api, and OAuth machine-to-machine authentication capabilities.
+Imagine a situation where you need to show basic reporting and KPI information on a summary page of your web application. The solution doesn't require interactivity, but solving the problem with SQL and D3.js means writing a lot of code that can be difficult and time-consuming to test and change. What if there is a way to easily serve Qlik Cloud Analytics snapshots of visualizations and data, enabling you to render summary resources without requiring users to log in? In this structured tutorial, you're going to learn how to render snapshot data to unauthenticated users using Qlik's qlik-embed web components, qlik/api, and OAuth machine-to-machine authentication capabilities.
 
 ![Screenshot of resulting embedded snapshots](docs/screenshot.png)
 
@@ -18,15 +18,18 @@ Imagine a situation where you need to show basic reporting and KPI information o
 
 ## Prerequisites
 
-Before you begin, review the following articles to accelerate your path to success with absolute confidence.
+Before you begin, review the following articles:
 
-- Using [qlik-embed](https://qlik.dev/embed/qlik-embed/)
-- [Guiding principles for OAuth M2M authentication](https://qlik.dev/authenticate/oauth/oauth-m2m/).
-- [Embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-charts-tutorial/).
-- Use HTTPS rather than HTTP for your project.
+- [Using qlik-embed](https://qlik.dev/embed/qlik-embed/)
+- [Guiding principles for OAuth M2M authentication](https://qlik.dev/authenticate/oauth/oauth-m2m/)
+- [Embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-charts-tutorial/)
+
+Make sure you have the following:
+
+- HTTPS enabled rather than HTTP for your project
 - [Node.js](https://nodejs.org/) version 22 or higher
 - An [OAuth M2M client](https://qlik.dev/authenticate/oauth/create/create-oauth-client/) configured with:
-  - Scopes: `user_default`
+  - Scope: `user_default`
   - No specific allowed origins required (server-side authentication)
 
 ## Step 1. Set up your local project
@@ -61,17 +64,17 @@ Before running this application, you need to add at least one monitored chart to
 
 1. Rename the `template.env` file to `.env`.
 2. Edit the `.env` file with values that match your Qlik Cloud deployment:
-   • `QLIK_M2M_CLIENT_ID`: enter the client ID obtained when you created the OAuth M2M client in the Administration Console.
-   • `QLIK_M2M_CLIENT_SECRET`: enter the client secret obtained when you created the OAuth M2M client in the Administration Console.
+   - `QLIK_M2M_CLIENT_ID`: Enter the client ID obtained when you created the OAuth M2M client in the Administration activity center.
+   - `QLIK_M2M_CLIENT_SECRET`: Enter the client secret obtained when you created the OAuth M2M client in the Administration activity center.
    
    > **Important**  
    > Keep these secrets safe as they provide access to your tenant.
    
-   • `QLIK_TENANT_URL`: enter the hostname of the Qlik Cloud tenant against which the app will run, such as `z29kgagw312sl0g.eu.qlikcloud.com`.
+   - `QLIK_TENANT_URL`: Enter the hostname of the Qlik Cloud tenant against which the app will run, such as `z29kgagw312sl0g.eu.qlikcloud.com`.
 
 ## Step 4. Install the dependencies and run the app
 
-1. Open a terminal window and navigate to the folder containing the project files you extracted or cloned.
+1. Open a terminal window and navigate to the folder containing the project files you cloned or extract.
 
    ```bash
    cd <project-folder>
