@@ -21,8 +21,7 @@ Imagine a situation where you need to show basic reporting and KPI information o
 Before you begin, review the following articles:
 
 - [Using qlik-embed](https://qlik.dev/embed/qlik-embed/)
-- [Guiding principles for OAuth M2M authentication](https://qlik.dev/authenticate/oauth/oauth-m2m/)
-- [Embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-charts-tutorial/)
+- [Embed offline charts tutorial](https://qlik.dev/embed/qlik-embed/quickstart/qlik-embed-offline-snapshots-m2m-tutorial/)
 
 Make sure you have the following:
 
