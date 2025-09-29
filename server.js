@@ -18,7 +18,7 @@ const requiredEnvVars = [
 ];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    console.error(`❌ Missing required environment variable: ${envVar}`);
+    console.error(`Missing required environment variable: ${envVar}`);
     console.error(`Please set ${envVar} in your .env file or environment.`);
     process.exit(1);
   }
@@ -42,33 +42,45 @@ setDefaultHostConfig(hostConfig);
 // --- GET /get-snapshots ---
 app.get("/get-snapshots", async (_req, res) => {
   try {
-    // 1) List chart-monitoring tasks
+    console.log("Refreshing snapshots from Qlik Cloud...");
+    
+    const snapshotsRoot = path.resolve("public", "snapshots");
+    
+    // Clear existing snapshots directory
+    try {
+      await fs.rm(snapshotsRoot, { recursive: true });
+      console.log("Cleared existing snapshots directory");
+    } catch (err) {
+      // Directory might not exist, which is fine
+      console.log("Snapshots directory didn't exist or was already empty");
+    }
+    
+    // List chart-monitoring tasks with no cache
     const items = await qlikItems.getItems({
       resourceType: "sharingservicetask",
       resourceSubType: "chart-monitoring",
-    });
+    }, { noCache: true });
 
-    // 2) Fetch full task details (id, name, latestExecutionFilesURL, ...)
+    // Fetch full task details (id, name, latestExecutionFilesURL, ...)
     // This is needed to keep the task active
     const tasks = [];
     for (const it of items.data.data) {
       const t = await qlikSharing.getSharingTask(it.resourceId, {
         isViewChart: true,
-      });
+      }, { noCache: true });
       console.log(`Fetched task ${t.data.id} (${t.data.name})`);
       tasks.push(t.data);
     }
 
-    // 3) Save artifacts to /public/snapshots/<id> with correct extensions
+    // Save artifacts to /public/snapshots/<id> with correct extensions
     await saveSnapshots(tasks);
 
-    // 4) Read the enhanced metadata from saved files and return for the UI
+    // Read the enhanced metadata from saved files and return for the UI
     const enhancedTasks = [];
-    const snapshotsDir = path.resolve("public", "snapshots");
     const processingErrors = [];
 
     for (const task of tasks) {
-      const metadataPath = path.join(snapshotsDir, task.id, "metadata.json");
+      const metadataPath = path.join(snapshotsRoot, task.id, "metadata.json");
       try {
         const metadataContent = await fs.readFile(metadataPath, "utf8");
         const metadata = JSON.parse(metadataContent);
@@ -93,11 +105,11 @@ app.get("/get-snapshots", async (_req, res) => {
 
     // Log summary of processing results
     console.log(
-      `Successfully processed ${enhancedTasks.length} complete snapshots`
+      `Successfully processed ${enhancedTasks.length} complete snapshots from Qlik Cloud`
     );
     if (processingErrors.length > 0) {
       console.log(
-        `⚠️ ${processingErrors.length} snapshots were incomplete and skipped`
+        `${processingErrors.length} snapshots were incomplete and skipped`
       );
     }
 
@@ -210,9 +222,10 @@ async function saveSnapshots(tasks) {
           task.id,
           executionId,
           fileAlias,
-          { status: "successful" }
+          { status: "successful" },
+          { noCache: true }
         );
-        if (fileResponse.status = 200) {
+        if (fileResponse.status === 200) {
           const contentType = (
             fileResponse.headers.get("content-type") || ""
           ).toLowerCase();
@@ -283,16 +296,16 @@ async function saveSnapshots(tasks) {
     // If ANY file failed, clean up and skip this task entirely
     if (hasFailures || !imageSmallSaved || !imageLargeSaved || !snapshotSaved) {
       console.warn(
-        `   ❌ Task ${task.name} (${task.id}) incomplete - cleaning up`
+        `   Task ${task.name} (${task.id}) incomplete - cleaning up`
       );
       try {
         await fs.rm(dir, { recursive: true });
         console.log(
-          `   Cleaned up incomplete snapshot directory for task ${task.id}`
+          `Cleaned up incomplete snapshot directory for task ${task.id}`
         );
       } catch (cleanupErr) {
         console.warn(
-          `   ⚠️ Failed to cleanup directory for task ${task.id}:`,
+          `Failed to cleanup directory for task ${task.id}:`,
           cleanupErr.message
         );
       }
@@ -339,14 +352,14 @@ try {
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
       console.error(
-        `❌ Port ${PORT} is already in use. Please free the port or set a different PORT environment variable.`
+        `Port ${PORT} is already in use. Please free the port or set a different PORT environment variable.`
       );
     } else {
-      console.error(`❌ Server error:`, err);
+      console.error(`Server error:`, err);
     }
     process.exit(1);
   });
 } catch (err) {
-  console.error(`❌ Failed to start server:`, err);
+  console.error(`Failed to start server:`, err);
   process.exit(1);
 }
