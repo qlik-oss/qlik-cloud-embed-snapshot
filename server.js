@@ -352,7 +352,7 @@ try {
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
       console.error(
-        `Port ${PORT} is already in use. Please free the port or set a different PORT environment variable.`
+        `Port ${PORT} is already in use. Please free the port or set a different PORT environment variable in your .env file or environment.`
       );
     } else {
       console.error(`Server error:`, err);
