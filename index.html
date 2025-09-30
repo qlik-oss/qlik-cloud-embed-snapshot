@@ -187,7 +187,30 @@
 
       // Function to refresh snapshots from the backend
       async function refreshSnapshots() {
+        // Immediately clear the UI when refresh is clicked
+        clearUI();
         return loadSnapshots('backend');
+      }
+
+      // Function to clear the UI immediately
+      function clearUI() {
+        const snapshotList = document.getElementById("snapshot-list");
+        const noSnapshotsMsg = document.getElementById("no-snapshots");
+        const container = document.getElementById("snapshot-container");
+        const placeholderMsg = document.getElementById("placeholder-msg");
+        const header = document.getElementById("snapshot-viewer-header");
+
+        // Clear the snapshot list
+        snapshotList.innerHTML = "";
+        snapshotList.classList.add("hidden");
+        
+        // Show "no snapshots" message
+        noSnapshotsMsg.classList.remove("hidden");
+        
+        // Clear the snapshot viewer and show placeholder
+        container.innerHTML = "";
+        placeholderMsg.classList.remove("hidden");
+        header.textContent = "Snapshot Viewer";
       }
 
       // Function to load local snapshots without backend call
