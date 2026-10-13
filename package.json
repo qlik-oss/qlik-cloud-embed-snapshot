@@ -19,8 +19,8 @@
   },
   "homepage": "https://github.com/qlik-oss/qlik-cloud-embed-snapshot#readme",
   "dependencies": {
-    "@qlik/api": "^2.0.0",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "@qlik/api": "^2.19.0",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0"
   }
 }
